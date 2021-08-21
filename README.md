@@ -9,17 +9,17 @@
 
 ## Introduction
 
-Partials help us break our code up into reusable chunks.  They also often have
-implicit dependencies that can lead to bugs.  For example, what if a partial
+Partials help us break our code up into reusable chunks. They also often have
+implicit dependencies that can lead to bugs. For example, what if a partial
 assumes that a `@user` variable is present. If the point is to _reuse_ partials,
 if you put it inside of an action that _didn't_ set a `@user` variable, you're
 going to have a bug. Using "locals" in partials is how we can make these
-implicit assumptions explicit.  In the following example, we'll unpack exactly
+implicit assumptions explicit. In the following example, we'll unpack exactly
 what locals are and how they're used.
 
 ## Lesson
 
-Take a look at the included repo.  You should notice the same piece of view code
+Take a look at the included repo. You should notice the same piece of view code
 in a few places.
 
 ```erb
@@ -31,12 +31,12 @@ in a few places.
 
 You'll find that code (or very similar code) in the following pages:
 
-* `app/views/authors/show.html.erb`
-* `app/views/authors/index.html.erb`
-* `app/views/posts/show.html.erb`.
-* `app/views/posts/index.html.erb`.
+- `app/views/authors/show.html.erb`
+- `app/views/authors/index.html.erb`
+- `app/views/posts/show.html.erb`.
+- `app/views/posts/index.html.erb`.
 
-Let's see how we might be vulnerable to bugs. In this `<ul>` we ***assume***
+Let's see how we might be vulnerable to bugs. In this `<ul>` we **_assume_**
 that there will be a controller-set variable, `@author`. But what if that
 person-like entity makes more sense to be called `@admin` or `@guest` or
 `@owner`. We want the same bit of UI, but don't want to have to re-name our
@@ -47,10 +47,10 @@ what we want to be _flexible_ is the "thing" that we invoke `.name` and
 > **ASIDE**: This should recall the "why do methods have arguments and
 > parameters" discussion from when you were learning to write methods.
 
-Let's start with the author show page.  Watch our _process_ here as we're going
+Let's start with the author show page. Watch our _process_ here as we're going
 to apply it to all views that reference this `name` and `hometown` information.
 
-Let's remove the code from our `app/views/authors/show.html.erb` page.  Now our
+Let's remove the code from our `app/views/authors/show.html.erb` page. Now our
 file should be empty:
 
 ```erb
@@ -58,7 +58,8 @@ file should be empty:
 
 ```
 
-We can move the removed code into a partial, `app/views/authors/_author.html.erb`, that now has the following code:
+We can move the removed code into a partial,
+`app/views/authors/_author.html.erb`, that now has the following code:
 
 ```erb
 <!-- app/views/authors/_author.html.erb -->
@@ -70,7 +71,7 @@ We can move the removed code into a partial, `app/views/authors/_author.html.erb
 ```
 
 To keep our code in the show page rendering out the same content, we call the
-partial from the `app/views/authors/show.html.erb` file.  Doing this, the
+partial from the `app/views/authors/show.html.erb` file. Doing this, the
 `app/views/authors/show.html.erb` file now looks like the following:
 
 ```erb
@@ -79,7 +80,7 @@ partial from the `app/views/authors/show.html.erb` file.  Doing this, the
 
 Great!
 
-Now let's take a look at the `app/views/posts/show.html.erb` file.  It
+Now let's take a look at the `app/views/posts/show.html.erb` file. It
 currently looks like the following:
 
 ```erb
@@ -93,8 +94,8 @@ Information About the Post
 ```
 
 You can see that lines 2-5 are exactly the same as the code in our
-authors/author partial.  Let's remove the repetition in our codebase by using
-that partial instead.  By using the partial, our code will look like the
+authors/author partial. Let's remove the repetition in our codebase by using
+that partial instead. By using the partial, our code will look like the
 following:
 
 ```erb
@@ -110,7 +111,7 @@ Information About the Post
 
 ## The Problem
 
-In `app/views/authors/show.html.erb` our source of information about  `.name`
+In `app/views/authors/show.html.erb` our source of information about `.name`
 and `.hometown` is `@author`; in `app/views/posts/show.html.erb` the source of
 information about `.name` and `.hometown` is `@post.author`. If we could tell
 the partial "use as your source" `@author` or `@post.author`, we could share the
@@ -161,15 +162,16 @@ to:
 ```
 
 The way we use locals with a partial is similar to how we pass arguments
-into a method.  In the `locals` `Hash`, the `post_author:` key is the argument
+into a method. In the `locals` `Hash`, the `post_author:` key is the argument
 name, and the value of that argument, `@author`, is the value
-stored as `post_author` and passed into the method.  We can name the keys
+stored as `post_author` and passed into the method. We can name the keys
 whatever we want.
 
-Now notice that, if we choose to delete the line `<%= render {partial:
-"authors/author", locals: {post_author: @author}} %>` from the posts/show view,
-calling the partial requires us to pass in data about the author. The `@author =
-@post.author` line in our `PostsController` may no longer be needed.
+Now notice that, if we choose to add the line
+`<%= render {partial: "authors/author", locals: {post_author: @author}} %>` from
+the posts/show view, calling the partial requires us to pass in data about the
+author. The `@author = @post.author` line in our `PostsController` may no longer
+be needed.
 
 In fact, with locals, we can completely eliminate the `@author = @post.author`
 line in the `posts#show` controller action, instead only accessing that data
@@ -178,31 +180,51 @@ where we need it, in the partial.
 Let's remove that line of code in our controller and in the view pass through
 the author information by changing our code to the following:
 
-`app/controllers/posts_controller`:
-
 ```ruby
-  ...
+  # app/controllers/posts_controller.rb
   def show
     @post = Post.find(params[:id])
   end
 
 ```
 
-`app/views/posts/show.html.erb`:
-
 ```erb
+<!-- app/views/posts/show.html.erb -->
 Information About the Post
 <%= render partial: "authors/author", locals: {post_author: @post.author} %>
 <%= @post.title %>
 <%= @post.content %>
 ```
 
-This code is much better.  We are being more explicit about our dependencies,
+This code is much better. We are being more explicit about our dependencies,
 reducing lines of code in our codebase, and reducing the scope of the author
 variable.
 
+Let's update the rest of our views to use the our partial with locals as well:
+
+```erb
+<!-- app/views/authors/show.html.erb -->
+<%= render partial: "authors/author", locals: {post_author: @author} %>
+```
+
+```erb
+<!-- app/views/authors/index.html.erb -->
+<% @authors.each do |author| %>
+  <%= render partial: "authors/author", locals: {post_author: author} %>
+<% end %>
+```
+
+```erb
+<!-- app/views/posts/index.html.erb -->
+<% @posts.each do |post| %>
+  <%= render partial: "authors/author", locals: {post_author: post.author} %>
+  <%= post.title %>
+  <%= post.content %>
+<% end %>
+```
+
 Don't worry if you find the syntax for rendering a partial hard to remember ––
-it is.  You can always reference this guide or the Rails Guides.
+it is. You can always reference this guide or the Rails Guides.
 
 ## Conclusion
 
@@ -211,4 +233,4 @@ In this lab we've learned how partials help us DRY out our views and how the
 
 ## Resources
 
-* [RailsGuide: Partials](http://guides.rubyonrails.org/layouts_and_rendering.html#using-partials)
+- [RailsGuide: Partials](http://guides.rubyonrails.org/layouts_and_rendering.html#using-partials)
