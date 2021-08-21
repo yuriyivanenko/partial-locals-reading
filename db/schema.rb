@@ -22,7 +22,7 @@ ActiveRecord::Schema.define(version: 2021_08_21_132005) do
   create_table "posts", force: :cascade do |t|
     t.integer "author_id"
     t.string "title"
-    t.text "description"
+    t.text "content"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["author_id"], name: "index_posts_on_author_id"
